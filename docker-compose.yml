@@ -1,0 +1,55 @@
+services:
+  db:
+    image: mariadb:11.4
+    container_name: sipri_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+
+  sipri:
+    build:
+      context: .
+      dockerfile: docker/sipri/Dockerfile
+    container_name: sipri_web
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "80:80"
+    environment:
+      # CI4/RiseCRM database settings (you still need to map these into CI4 config/.env as your project expects)
+      SIPRI_DB_HOST: db
+      SIPRI_DB_NAME: ${SIPRI_DB_NAME:-sipri_crm}
+      SIPRI_DB_USER: ${SIPRI_DB_USER:-sipri}
+      SIPRI_DB_PASS: ${SIPRI_DB_PASS:-sipri}
+    volumes:
+      - ../sipri/public_html/crm:/var/www/html
+
+  app_sipri:
+    build:
+      context: .
+      dockerfile: docker/app_sipri/Dockerfile
+    container_name: app_sipri_web
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "3000:80"
+    environment:
+      APP_SIPRI_DB_HOST: db
+      APP_SIPRI_DB_PORT: 3306
+      APP_SIPRI_DB_NAME: ${APP_SIPRI_DB_NAME:-app_sipri}
+      APP_SIPRI_DB_USER: ${APP_SIPRI_DB_USER:-app_sipri}
+      APP_SIPRI_DB_PASS: ${APP_SIPRI_DB_PASS:-app_sipri}
+    volumes:
+      - ../app.sipri/public_html:/var/www/html
+
+volumes:
+  db_data:
+
+
