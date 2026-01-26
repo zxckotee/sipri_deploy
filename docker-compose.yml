@@ -5,6 +5,12 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      SIPRI_DB_NAME: ${SIPRI_DB_NAME:-sipri_crm}
+      SIPRI_DB_USER: ${SIPRI_DB_USER:-sipri}
+      SIPRI_DB_PASS: ${SIPRI_DB_PASS:-sipri}
+      APP_SIPRI_DB_NAME: ${APP_SIPRI_DB_NAME:-app_sipri}
+      APP_SIPRI_DB_USER: ${APP_SIPRI_DB_USER:-app_sipri}
+      APP_SIPRI_DB_PASS: ${APP_SIPRI_DB_PASS:-app_sipri}
     ports:
       - "3306:3306"
     volumes:
@@ -28,6 +34,8 @@ services:
       SIPRI_DB_USER: ${SIPRI_DB_USER:-sipri}
       SIPRI_DB_PASS: ${SIPRI_DB_PASS:-sipri}
     volumes:
+      # IMPORTANT: code is NOT copied into the image; it is mounted at runtime.
+      # Assumption: sipri_deploy/ is a sibling of sipri/ and app.sipri/
       - ../sipri/public_html/crm:/var/www/html
 
   app_sipri:
@@ -47,6 +55,7 @@ services:
       APP_SIPRI_DB_USER: ${APP_SIPRI_DB_USER:-app_sipri}
       APP_SIPRI_DB_PASS: ${APP_SIPRI_DB_PASS:-app_sipri}
     volumes:
+      # IMPORTANT: code is NOT copied into the image; it is mounted at runtime.
       - ../app.sipri/public_html:/var/www/html
 
 volumes:

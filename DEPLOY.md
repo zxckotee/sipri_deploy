@@ -14,15 +14,13 @@
   - `c:\app.sipri\public_html`
   - `c:\sipri_deploy` (этот каталог)
 
-### 1.2 Переменные окружения compose
-Файл `env.sample` содержит пример значений.  
-Создайте рядом файл `.env` (Docker Compose читает `.env`) и заполните:
+### 1.2 Переменные окружения compose (.env)
+Файл `compose.env.sample` содержит пример значений.  
+Создайте рядом файл `.env` (Docker Compose читает его автоматически) и заполните:
 
 - `DB_ROOT_PASSWORD`
 - `SIPRI_DB_NAME`, `SIPRI_DB_USER`, `SIPRI_DB_PASS`
 - `APP_SIPRI_DB_NAME`, `APP_SIPRI_DB_USER`, `APP_SIPRI_DB_PASS`
-
-Важно: имя файла `.env` может быть запрещено политиками репозитория, но для **деплоя** он всё равно нужен. Если нельзя хранить `.env` в репо — держите его только на сервере.
 
 ## 2) Запуск
 
@@ -40,9 +38,9 @@ docker compose up -d --build
 ## 3) База данных
 
 ### 3.1 Инициализация
-MariaDB при первом запуске выполнит `db/init/01-init.sql` и создаст:
-- БД `sipri_crm`, пользователь `sipri`
-- БД `app_sipri`, пользователь `app_sipri`
+MariaDB при первом запуске выполнит `db/init/01-init.sh` и создаст БД/пользователей согласно `.env`:
+- `SIPRI_DB_NAME`, `SIPRI_DB_USER`, `SIPRI_DB_PASS`
+- `APP_SIPRI_DB_NAME`, `APP_SIPRI_DB_USER`, `APP_SIPRI_DB_PASS`
 
 ### 3.2 Импорт схемы app.sipri (если нужно)
 Файл `c:\app.sipri\public_html\sql.txt` содержит дамп. Для импорта:
