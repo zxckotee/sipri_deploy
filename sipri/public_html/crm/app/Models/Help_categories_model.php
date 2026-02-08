@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Models;
+
+class Help_categories_model extends Crud_model {
+
+    protected $table = null;
+
+    function __construct() {
+        $this->table = 'help_categories';
+        parent::__construct($this->table);
+    }
+
+    function get_details($options = array()) {
+        $help_categories_table = $this->db->prefixTable('help_categories');
+        $help_articles_table = $this->db->prefixTable('help_articles');
+
+        $where = "";
+        $id = $this->_get_clean_value($options, "id");
+        if ($id) {
+            $where .= " AND $help_categories_table.id=$id";
+        }
+
+        $type = $this->_get_clean_value($options, "type");
+        if ($type) {
+            $where .= " AND $help_categories_table.type='$type'";
+        }
+
+        // SIPRI ACL filters (optional)
+        $sipri_tenant_id = $this->_get_clean_value($options, "sipri_tenant_id");
+        $sipri_department_id = $this->_get_clean_value($options, "sipri_department_id");
+        if ($sipri_tenant_id) {
+            $where .= " AND $help_categories_table.sipri_tenant_id=" . $this->db->escapeString($sipri_tenant_id);
+            if ($sipri_department_id) {
+                // department-specific categories: allow tenant-wide (NULL) + matching department
+                $where .= " AND ($help_categories_table.sipri_department_id IS NULL OR $help_categories_table.sipri_department_id=" . $this->db->escapeString($sipri_department_id) . ")";
+            }
+        }
+
+        
+        $only_active_categories = $this->_get_clean_value($options, "only_active_categories");
+        if ($only_active_categories) {
+            $where .= " AND $help_categories_table.status='active'";
+        }
+
+        
+        $sql = "SELECT $help_categories_table.*, 
+                (SELECT COUNT($help_articles_table.id) AS total_articles FROM $help_articles_table WHERE $help_articles_table.category_id=$help_categories_table.id AND $help_articles_table.deleted=0 AND  $help_articles_table.status='active') AS total_articles
+        FROM $help_categories_table
+        WHERE $help_categories_table.deleted=0 $where 
+        ORDER BY $help_categories_table.sort";
+        return $this->db->query($sql);
+    }
+
+}
