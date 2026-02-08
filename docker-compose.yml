@@ -12,7 +12,7 @@ services:
       APP_SIPRI_DB_USER: ${APP_SIPRI_DB_USER:-app_sipri}
       APP_SIPRI_DB_PASS: ${APP_SIPRI_DB_PASS:-app_sipri}
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./db/init:/docker-entrypoint-initdb.d:ro
@@ -26,7 +26,7 @@ services:
     depends_on:
       - db
     ports:
-      - "80:80"
+      - "${SIPRI_PORT:-80}:80"
     environment:
       # CI4/RiseCRM database settings (you still need to map these into CI4 config/.env as your project expects)
       SIPRI_DB_HOST: db
@@ -35,8 +35,8 @@ services:
       SIPRI_DB_PASS: ${SIPRI_DB_PASS:-sipri}
     volumes:
       # IMPORTANT: code is NOT copied into the image; it is mounted at runtime.
-      # Assumption: sipri_deploy/ is a sibling of sipri/ and app.sipri/
-      - ../sipri/public_html/crm:/var/www/html
+      # sipri/ and app.sipri/ are now inside sipri_deploy/
+      - ./sipri/public_html/crm:/var/www/html
 
   app_sipri:
     build:
@@ -47,7 +47,7 @@ services:
     depends_on:
       - db
     ports:
-      - "3000:80"
+      - "${APP_SIPRI_PORT:-3000}:80"
     environment:
       APP_SIPRI_DB_HOST: db
       APP_SIPRI_DB_PORT: 3306
@@ -56,7 +56,8 @@ services:
       APP_SIPRI_DB_PASS: ${APP_SIPRI_DB_PASS:-app_sipri}
     volumes:
       # IMPORTANT: code is NOT copied into the image; it is mounted at runtime.
-      - ../app.sipri/public_html:/var/www/html
+      # sipri/ and app.sipri/ are now inside sipri_deploy/
+      - ./app.sipri/public_html:/var/www/html
 
 volumes:
   db_data:
